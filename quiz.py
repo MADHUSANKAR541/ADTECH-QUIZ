@@ -95,17 +95,15 @@ def next_question(user_choice):
 
 # **Step 1: User enters name**
 if not st.session_state.user_name:
-    st.title("Welcome to the ADTECH Quiz!")
+    st.title("Welcome to the ADTECH Quiz! ")
     st.session_state.user_name = st.text_input("Enter your name:")
-    if st.session_state.user_name:
-        st.success(f"Welcome, {st.session_state.user_name}! Click below to start the quiz.")
-        if st.button("Enter"):
-            start_quiz()
+    if st.button("Enter"):
+        start_quiz()
     st.stop()
 
 # **Step 2: Welcome screen before quiz starts**
 if not st.session_state.quiz_started:
-    st.title(f"🚀 Welcome, {st.session_state.user_name}! 🎉")
+    st.title(f"Welcome, {st.session_state.user_name}! 🎉")
     st.write("🎯 **Quiz Instructions:**")  
     st.markdown("""
         ✅ **Answer multiple-choice questions on AdTech.**  
@@ -114,9 +112,7 @@ if not st.session_state.quiz_started:
         ✅ **Your final score will be shown at the end!**  
         ✅ **Have fun and test your knowledge! 🚀**  
     """)
-
-    st.write("Get ready for the quiz. Click below to begin.")
-    if st.button("📝 Start Quiz"):
+    if st.button("Enter"):
         start_quiz()
     st.stop()
 
