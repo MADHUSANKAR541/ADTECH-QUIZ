@@ -50,6 +50,18 @@ mcq_data = [
      "answer": "Google banning third-party cookies"},
 ]
 
+
+BADGE_DIR = os.path.join(os.getcwd(), "badges")  # Ensure the 'badges' folder is correctly referenced
+
+BADGE_PATHS = {
+    "novice": os.path.join(BADGE_DIR, "adtech_novice.jpg"),
+    "enthusiast": os.path.join(BADGE_DIR, "adtech_enthusiast.jpg"),
+    "pro": os.path.join(BADGE_DIR, "adtech_pro.jpg"),
+    "expert": os.path.join(BADGE_DIR, "adtech_expert.jpg")
+}
+
+
+
 LEADERBOARD_FILE = "leaderboard.csv"
 
 def init_leaderboard():
@@ -183,23 +195,71 @@ if st.session_state.quiz_started and not st.session_state.quiz_over:
             st.warning("Please select an answer before moving to the next question.")
 
 if st.session_state.quiz_over:
-    st.title("🎉 Quiz Completed!")
-    
-    # Custom messages based on score
-    if st.session_state.score == 10:
-        st.success(f"🏆 Perfect Score, {st.session_state.user_name}! 🎯 You got **10/10**! Amazing work!")
-        st.balloons()
-    elif st.session_state.score >= 7:
-        st.success(f"👏 Well done, {st.session_state.user_name}! You scored **{st.session_state.score}/10**! Great job! 🚀")
-        st.balloons()
-    elif st.session_state.score >= 4:
-        st.warning(f"😊 Nice effort, {st.session_state.user_name}! You scored **{st.session_state.score}/10**. Keep practicing!")
-    else:
-        st.error(f"😬 Better luck next time, {st.session_state.user_name}! You scored **{st.session_state.score}/10**. Try again!")
+    st.title(f"🎖️ {st.session_state.user_name}, you scored {st.session_state.score}/10!")
+    st.write("Here is you badge")
 
-    df = pd.read_csv(LEADERBOARD_FILE).sort_values(by="Score", ascending=False).reset_index(drop=True)
-    st.subheader("🏅 **Leaderboard - Top 5 Players** 🏅")
-    st.dataframe(df.head(5))  # Show top 5 scores
+    # Determine badge based on score
+    if st.session_state.score == 10:
+        badge_title = "🏆 AdTech Expert"
+        badge_path = BADGE_PATHS["expert"]
+    elif st.session_state.score >= 7:
+        badge_title = "🥇 AdTech Pro"
+        badge_path = BADGE_PATHS["pro"]
+    elif st.session_state.score >= 4:
+        badge_title = "🥈 AdTech Enthusiast"
+        badge_path = BADGE_PATHS["enthusiast"]
+    else:
+        badge_title = "🥉 AdTech Novice"
+        badge_path = BADGE_PATHS["novice"]
+
+    
+
+    # Ensure badge directory exists
+    BADGE_DIR = os.path.join(os.getcwd(), "badges")
+
+    # Get correct badge path
+    badge_path = BADGE_PATHS.get(
+        "expert" if st.session_state.score == 10 else
+        "pro" if st.session_state.score >= 7 else
+        "enthusiast" if st.session_state.score >= 4 else
+        "novice"
+    )
+
+    # Ensure the file exists before displaying
+    if os.path.exists(badge_path):
+        st.image(badge_path, caption=badge_title, width=200)
+    else:
+        st.warning("⚠️ Badge image not found!")
+    
+
+    # Add celebration effect if score is greater than 7
+    if st.session_state.score >= 7:
+        st.balloons()
+
+
+    # 📊 Leaderboard Handling (Store & Display Scores)
+    leaderboard_file = "leaderboard.csv"
+
+    # Load existing leaderboard or create if not exists
+    try:
+        leaderboard_df = pd.read_csv(leaderboard_file)
+    except FileNotFoundError:
+        leaderboard_df = pd.DataFrame(columns=["Name", "Score"])
+
+    # Append new score
+    new_entry = pd.DataFrame({"Name": [st.session_state.user_name], "Score": [st.session_state.score]})
+    leaderboard_df = pd.concat([leaderboard_df, new_entry], ignore_index=True)
+
+    # Sort by Score (Descending)
+    leaderboard_df = leaderboard_df.sort_values(by="Score", ascending=False)
+
+    # Save Updated Leaderboard
+    leaderboard_df.to_csv(leaderboard_file, index=False)
+
+    # 🎖️ Display Leaderboard
+    st.subheader("🏆 Leaderboard (Top 10)")
+    top_leaderboard = leaderboard_df.sort_values(by="Score", ascending=False).head(10)  # Sort and get top 10
+    st.table(top_leaderboard)  # Use table instead of dataframe for better formatting
 
 
     # Restart button
