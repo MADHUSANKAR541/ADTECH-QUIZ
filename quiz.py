@@ -95,7 +95,7 @@ def next_question(user_choice):
 
 # **Step 1: User enters name**
 if not st.session_state.user_name:
-    st.title("🎉 Welcome to the ADTECH Quiz! 🎨")
+    st.title("Welcome to the ADTECH Quiz!")
     st.session_state.user_name = st.text_input("Enter your name:")
     if st.session_state.user_name:
         st.success(f"Welcome, {st.session_state.user_name}! Click below to start the quiz.")
