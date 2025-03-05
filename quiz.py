@@ -1,6 +1,9 @@
 import streamlit as st
 import random
-import time
+import pandas as pd
+import os
+
+
 
 
 
@@ -47,6 +50,15 @@ mcq_data = [
      "answer": "Google banning third-party cookies"},
 ]
 
+LEADERBOARD_FILE = "leaderboard.csv"
+
+def init_leaderboard():
+    if not os.path.exists(LEADERBOARD_FILE):
+        df = pd.DataFrame(columns=["Name", "Score"])
+        df.to_csv(LEADERBOARD_FILE, index=False)
+
+init_leaderboard() 
+
 
 # Function to remove 2 wrong options (50-50 Lifeline)
 def fifty_fifty(options, correct_answer):
@@ -81,6 +93,13 @@ def start_quiz():
     st.session_state.fifty_fifty_used = False  # Reset lifeline usage for new quiz
     st.session_state.reduced_options = {}  # Reset stored options
 
+def save_score(name, score):
+    df = pd.read_csv(LEADERBOARD_FILE)
+    new_entry = pd.DataFrame({"Name": [name], "Score": [score]})
+    df = pd.concat([df, new_entry], ignore_index=True)
+    df.to_csv(LEADERBOARD_FILE, index=False)
+
+
 # Function to move to the next question
 def next_question(user_choice):
     correct_answer = mcq_data[st.session_state.current_question]["answer"]
@@ -92,6 +111,10 @@ def next_question(user_choice):
 
     if st.session_state.current_question >= len(mcq_data):
         st.session_state.quiz_over = True  # End quiz if no more questions
+    if st.session_state.current_question >= len(mcq_data):
+        st.session_state.quiz_over = True  # End quiz
+        save_score(st.session_state.user_name, st.session_state.score)  # Save result
+
 
 # **Step 1: User enters name**
 if not st.session_state.user_name:
@@ -173,6 +196,11 @@ if st.session_state.quiz_over:
         st.warning(f"😊 Nice effort, {st.session_state.user_name}! You scored **{st.session_state.score}/10**. Keep practicing!")
     else:
         st.error(f"😬 Better luck next time, {st.session_state.user_name}! You scored **{st.session_state.score}/10**. Try again!")
+
+    df = pd.read_csv(LEADERBOARD_FILE).sort_values(by="Score", ascending=False).reset_index(drop=True)
+    st.subheader("🏅 **Leaderboard - Top 5 Players** 🏅")
+    st.dataframe(df.head(5))  # Show top 5 scores
+
 
     # Restart button
     st.button("🔄 Restart Quiz", on_click=start_quiz)
